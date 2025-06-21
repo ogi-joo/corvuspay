@@ -17,8 +17,12 @@ export async function generateCorvusSignature(
   // Sort fields by key alphabetically
   const sortedKeys = Object.keys(fields).sort();
 
-  // Concatenate all values in order
-  const concatenatedValues = sortedKeys.map((key) => key + fields[key]).join("");
+  // Concatenate all values in order, excluding signature and cardholder_state
+  const concatenatedValues = sortedKeys
+    .filter((key) => key !== "signature" && key !== "cardholder_state")
+    .map((key) => key + fields[key])
+    .join("");
+    
 
   // Create HMAC-SHA256 using the secret key
   const hmac = crypto
@@ -28,3 +32,4 @@ export async function generateCorvusSignature(
 
   return hmac.toLowerCase(); // CorvusPay requires lowercase hex string
 }
+ 
