@@ -1,6 +1,6 @@
 {
   "name": "corvuspay-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JS module for CorvusPay.com payment processor",
   "keywords": [
     "corvus",
