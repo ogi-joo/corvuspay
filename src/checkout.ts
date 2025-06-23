@@ -32,10 +32,10 @@ export type CorvusFormFields = {
     cancel_url?: string; // URL for cancelled transaction redirect (max 200 chars)
 };
   
-export function createCorvusForm(fields: CorvusFormFields, actionUrl: string = 'https://test-wallet.corvuspay.com/checkout/') {
+export function createCorvusForm(fields: CorvusFormFields, actionUrl: string = process.env.CORVUS_API || 'https://test-wallet.corvuspay.com') {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = actionUrl;
+    form.action = actionUrl + "/checkout/";
     form.style.display = 'none';
 
     // Add fields to form
