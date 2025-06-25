@@ -1,5 +1,80 @@
 # CorvusPay JS
 
+
+### Simple usage
+
+*createCorvusForm* uses **CORVUS_SECRET_KEY** from .env but you can also pass the key.
+
+It also uses **CORVUS_API** from .env to get main API route, but will use official test route if no CORVUS_API is given.
+
+```javascript
+"use server"
+
+import { CorvusFormFields, createCorvusForm } from "corvuspay-js"
+
+export default async function Page({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const params = await searchParams
+
+    const fields = {
+        store_id: params.store_id,
+        order_number: params.order_number,
+        language: params.language,
+        currency: params.currency,
+        amount: params.amount,
+        cart: params.cart,
+        require_complete: params.require_complete,
+        cardholder_country_code: params.cardholder_country_code,
+        version: params.version,
+        //optional fields
+        cardholder_name: params.cardholder_name,
+        cardholder_surname: params.cardholder_surname,
+        cardholder_email: params.cardholder_email,
+        cardholder_address: params.cardholder_address,
+        cardholder_city: params.cardholder_city,
+        cardholder_country: params.cardholder_country,
+        cardholder_zip_code: params.cardholder_zip_code,
+        target: params.target, // I don't know what's this for, yet it's in the docs
+        account_id: params.account_id,
+        success_url: params.success_url, // optional but needed
+        cancel_url: params.cancel_url, //optional but needed
+        subscription: params.subscription, // in order to use subscription, email Corvus to enable it for each store
+        additional_order_number: params.additional_order_number,
+    } as CorvusFormFields;
+
+    //uses CORVUS_SECRET_KEY in .env
+    const form = await createCorvusForm(fields)
+
+    // Corvus has a weird API, this is the only way to get to the checkout from a server side rendering.
+    return <div dangerouslySetInnerHTML={{__html: form}} />;
+}
+```
+### Refund Usage
+
+Refund function is easier to implement but harded to setup.
+What you need:
+1) Generate *CorvusPay.key.pem*
+```bash
+openssl req -batch -nodes -newkey rsa:2048 -sha256 \
+  -keyout CorvusPay.key.pem \
+  -out CorvusPay.csr
+```
+2) Email it to *support@corvuspay.com* with a request to get *CorvusPay.crt.pem* back
+3) Use them for bunch of "high security" routes, one of which is refund:
+```javascript
+const data = await corvusRefund(
+        store_id,
+        order_number,
+        {
+            certPath: "./path-to-your/CorvusPay.crt.pem",
+            keyPath: "./path-to-your/CorvusPay.key.pem",
+        }) as CorvusRefundResponse;
+```
+
+## Other stuff
 ### Get HMAC signature
 ```javascript
 "use server"
@@ -11,47 +86,4 @@ export async function generateCorvusSignatureServer(fields: CorvusFormFields) {
     const signature = await generateCorvusSignature(fields);
     return signature;
 }
-```
-### Generate Checkout Page
-```javascript
-"use client"
-import { CorvusFormFields, createCorvusForm } from 'corvuspay-js'
-
-...
-
-useEffect(() => {
-        const fetchForm = async () => {
-            const fields = {
-                store_id: "30978",
-                order_number: "123456789",
-                language: "hr",
-                currency: "EUR",
-                amount: "100.00",
-                cart: "2xLCDTV a",
-                require_complete: "false" as const,
-                cardholder_country_code: "HR",
-                version: "5.3",
-                signature: ... , //server side generated signature
-
-                //optional
-                cardholder_name: "Ognjen",
-                cardholder_surname: "Jovanovic",
-                cardholder_email: "ognjen@example.com",
-                cardholder_address: "123 Main St, Nis, Serbia",
-                cardholder_city: "Nis",
-                cardholder_country: "RS",
-                cardholder_zip_code: "123456",
-                account_id: "2imflaSkPf1swBNzebPoyW",
-                success_url: "https://www.google.com",
-                cancel_url: "https://www.google.com",
-                subscription: "false" as const,
-                additional_order_number: "12345678910",
-            } as CorvusFormFields;
-
-            //uses CORVUS_API url in .env, if empty - Corvus test API url
-            const form = createCorvusForm(fields); 
-            form.submit();
-        }
-        fetchForm();
-    }, []);
 ```
