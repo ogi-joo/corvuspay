@@ -1,5 +1,5 @@
 {
-  "name": "corvuspay-js",
+  "name": "corvuspay",
   "version": "1.0.1",
   "description": "JS module for CorvusPay.com payment processor",
   "keywords": [
@@ -11,13 +11,13 @@
     "js",
     "corvuspay-js"
   ],
-  "homepage": "https://github.com/ogi-joo/corvuspay-js#readme",
+  "homepage": "https://github.com/ogi-joo/corvuspay#readme",
   "bugs": {
-    "url": "https://github.com/ogi-joo/corvuspay-js/issues"
+    "url": "https://github.com/ogi-joo/corvuspay/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ogi-joo/corvuspay-js.git"
+    "url": "git+https://github.com/ogi-joo/corvuspay.git"
   },
   "license": "MIT",
   "author": "Ognjen Jovanović",
