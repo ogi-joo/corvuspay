@@ -1,5 +1,7 @@
 "use server";
 
+import { generateCorvusSignature } from "./hmac";
+
 /**
  * Generates HMAC-SHA256 signature for CorvusPay payment form.
  *
@@ -18,7 +20,7 @@ export type CorvusFormFields = {
     cart: string;
     require_complete: "true" | "false";
     cardholder_country_code: string;
-    signature: string;
+    signature?: string;
     cardholder_name?: string; // Name of the cardholder (max 40 chars)
     cardholder_surname?: string; // Surname of the cardholder (max 40 chars)
     cardholder_address?: string; // Cardholder address (max 100 chars)
@@ -31,12 +33,18 @@ export type CorvusFormFields = {
     success_url?: string; // URL for successful transaction redirect (max 200 chars)
     cancel_url?: string; // URL for cancelled transaction redirect (max 200 chars)
 };
-  
+
 export async function createCorvusForm(fields: CorvusFormFields, actionUrl: string = process.env.CORVUS_API || 'https://test-wallet.corvuspay.com') {
+    const signature = await generateCorvusSignature(fields as CorvusFormFields)
+
+    fields.signature = signature;
+
     const formId = `corvus-form-${Date.now()}`;
+
     const formFields = Object.entries(fields)
         .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}">`)
         .join('\n');
+
 
     const html = `
         <div>
@@ -56,4 +64,3 @@ export async function createCorvusForm(fields: CorvusFormFields, actionUrl: stri
 
     return html;
 }
-  
