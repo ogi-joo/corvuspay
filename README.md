@@ -52,10 +52,10 @@ export default async function Page({
     return <div dangerouslySetInnerHTML={{__html: form}} />;
 }
 ```
-### Refund Usage
+### GET Transaction
 
-Refund function is easier to implement but harded to setup.
-What you need:
+For high security routes, you will need custom certs. 
+What you need to do:
 1) Generate *CorvusPay.key.pem*
 ```bash
 openssl req -batch -nodes -newkey rsa:2048 -sha256 \
@@ -63,7 +63,69 @@ openssl req -batch -nodes -newkey rsa:2048 -sha256 \
   -out CorvusPay.csr
 ```
 2) Email it to *support@corvuspay.com* with a request to get *CorvusPay.crt.pem* back
-3) Use them for bunch of "high security" routes, one of which is refund:
+3) Use them for bunch of "high security" routes, one of which is to GET Transaction:
+```javascript
+const result = await corvusCheckStatus(
+        params.store_id as string,
+        params.order_number as string,
+        process.env.CORVUS_CURRENCY_CODE || '978',
+        {
+          certPath: './corvus-pay/CorvusPay.crt.pem',
+          keyPath: './corvus-pay/CorvusPay.key.pem',
+        }
+);
+    
+if (result.success) {
+    console.log('Transaction details:', result.data);
+    console.log('Status:', result.data.status);
+    console.log('Amount:', result.data.amount);
+} else {
+    console.log('Error:', result.data.errors);
+}
+```
+Logs:
+```bash
+Transaction details: {
+  order_number: '12345',
+  amount: '10000', // this is 100 EUR
+  transaction_datetime: '20250623180613',
+  status: 'authorized',
+  response_message: 'approved',
+  response_code: '0',
+  currency_code: '978',
+  card_type: 'visa',
+  cardholder_name: 'Ognjen',
+  cardholder_surname: 'Jovanovic',
+  cardholder_address: '123 Main St, Nis, Serbia',
+  cardholder_city: 'Nis',
+  cardholder_zip_code: '123456',
+  cardholder_email: 'ognjen@example.com',
+  cardholder_phone: '',
+  cardholder_country: 'RS',
+  cardholder_country_code: 'RS',
+  installments_number: '0',
+  card_masked_number: '400000xxxxxx0000',
+  rrn: '000001234567',
+  approval_code: '123456',
+  acquirer_code: '0',
+  transaction_type: '1',
+  transaction_description: 'Initial subscription transaction',
+  transaction_description_hr: 'Početna transakcija pretplate',
+  transaction_description_sr: 'Početna transakcija pretplate',
+  transaction_description_cyr: 'Почетна трансакција претплате',
+  additional_order_number: '',
+  subscription_exp_date: '2030-12-31 00:00:00.0',
+  account_id: '1234567'
+}
+Status: authorized
+Amount: 10000 // this is 100 EUR
+```
+See more about **transaction descriptions** [here](#possible-transaction-type-values)
+
+
+### Refund Usage
+
+Refund is similar to GET transaction status regarding security:
 ```javascript
 const data = await corvusRefund(
         store_id,
@@ -87,3 +149,27 @@ export async function generateCorvusSignatureServer(fields: CorvusFormFields) {
     return signature;
 }
 ```
+
+### Possible transaction type values
+
+| Value | EN Description                     | HR Description                               | SR Description                                | CYR Description                                  |
+|-------|-------------------------------------|-----------------------------------------------|------------------------------------------------|--------------------------------------------------|
+| 0     | Regular transaction                 | Redovna transakcija                          | Redovna transakcija                            | Редовна трансакција                              |
+| 1     | Initial subscription transaction    | Početna transakcija pretplate                | Početna transakcija pretplate                  | Почетна трансакција претплате                    |
+| 2     | Next subscription                   | Sljedeća pretplata                           | Sledeća pretplata                              | Следећа претплата                                |
+| 3     | Saving a card for CardStorage       | Spremanje kartice za CardStorage             | Čuvanje kartice za CardStorage                 | Чување картице за CardStorage                    |
+| 4     | Using a card from CardStorage       | Korištenje kartice iz CardStorage            | Korišćenje kartice iz CardStorage              | Коришћење картице из CardStorage                |
+| 5     | Saving a card for Corvus Wallet     | Spremanje kartice za Corvus Wallet           | Čuvanje kartice za Corvus Wallet               | Чување картице за Corvus Wallet                  |
+| 6     | Using a card from Corvus Wallet     | Korištenje kartice iz Corvus Wallet          | Korišćenje kartice iz Corvus Wallet            | Коришћење картице из Corvus Wallet              |
+| 7     | Saving a card during fast registration | Spremanje kartice tijekom brze registracije | Čuvanje kartice tokom brze registracije        | Чување картице током брзе регистрације          |
+| 8     | PIS transaction                     | PIS transakcija                              | PIS transakcija                                | PIS трансакција                                  |
+| 9     | PIS transaction from Corvus Wallet  | PIS transakcija iz Corvus Wallet             | PIS transakcija iz Corvus Wallet               | PIS трансакција из Corvus Wallet                |
+| 10    | paysafecard                         | paysafecard                                  | paysafecard                                    | paysafecard                                      |
+| 11    | Virtual Terminal                    | Virtualni terminal                           | Virtuelni terminal                             | Виртуелни терминал                               |
+| 12    | POS transaction                     | POS transakcija                              | POS transakcija                                | POS трансакција                                  |
+| 13    | QR Code transaction                 | QR kod transakcija                           | QR kod transakcija                             | QR код трансакција                               |
+| 14    | Mobile Wallet transaction           | Mobilni novčanik transakcija                 | Mobilni novčanik transakcija                   | Мобилни новчаник трансакција                    |
+| 15    | Crypto transaction                  | Kripto transakcija                           | Kripto transakcija                             | Крипто трансакција                               |
+| 16    | Google Pay transaction              | Google Pay transakcija                       | Google Pay transakcija                         | Google Pay трансакција                           |
+| 17    | Apple Pay transaction               | Apple Pay transakcija                        | Apple Pay transakcija                          | Apple Pay трансакција                            |
+| 18    | IPS transaction                     | IPS transakcija                              | IPS transakcija                                | IPS трансакција                                  |
