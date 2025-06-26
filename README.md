@@ -122,6 +122,33 @@ Amount: 10000 // this is 100 EUR
 ```
 See more about **transaction descriptions** [here](#possible-transaction-type-values)
 
+### Complete Transaction & Complete Subscription
+
+In order for funds to be transfered, you need to complete transactions. In order to be able to complete a transaction, you need to create it with **require_complete = true**.
+```javascript
+# regular transaction
+const result = await corvusComplete(
+        "store_id",
+        "order_number",
+        {
+          certPath: './corvus-pay/CorvusPay.crt.pem',
+          keyPath: './corvus-pay/CorvusPay.key.pem',
+          
+        }
+);
+
+#subscription
+const result = await corvusCompleteSubscription(
+        "store_id",
+        "order_number",
+        "account_id",
+        {
+          certPath: './corvus-pay/CorvusPay.crt.pem',
+          keyPath: './corvus-pay/CorvusPay.key.pem',
+          
+        }
+);
+```
 
 ### Refund Usage
 
