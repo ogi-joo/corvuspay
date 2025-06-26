@@ -75,6 +75,18 @@ async function parseCorvusResponse(xmlString: string): Promise<CorvusRefundRespo
   }
 }
 
+// Type guard for axios error response
+function isAxiosErrorWithResponse(error: unknown): error is { response: { data: unknown } } {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'response' in error &&
+    error.response !== null &&
+    typeof error.response === 'object' &&
+    'data' in error.response
+  );
+}
+
 /**
  * Initiates a refund request to CorvusPay API
  * 
@@ -137,7 +149,7 @@ export async function corvusRefund(
     return await parseCorvusResponse(response.data);
   } catch (error) {
     // If the error response contains XML, try to parse it
-    if (error && typeof error === 'object' && 'response' in error && error.response?.data) {
+    if (isAxiosErrorWithResponse(error)) {
       try {
         const errorData = error.response.data;
         if (typeof errorData === 'string') {
