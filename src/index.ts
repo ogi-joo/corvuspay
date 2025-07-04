@@ -5,4 +5,6 @@ export type { CorvusRefundConfig, CorvusRefundResponse } from './refund';
 export { createCorvusForm } from './checkout';
 export type { CorvusFormFields } from './checkout';
 export { corvusComplete, corvusCompleteSubscription } from './complete';
-export type { CorvusCompleteConfig, CorvusCompleteResponse } from './complete'; 
+export type { CorvusCompleteConfig, CorvusCompleteResponse } from './complete';
+export { corvusNextSubPayment, corvusNextSubPaymentWithAmount } from './next_sub_payment';
+export type { CorvusNextSubPaymentConfig, CorvusNextSubPaymentResponse } from './next_sub_payment'; 

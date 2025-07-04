@@ -10,7 +10,7 @@ It also uses **CORVUS_API** from .env to get main API route, but will use offici
 ```javascript
 "use server"
 
-import { CorvusFormFields, createCorvusForm } from "corvuspay-js"
+import { CorvusFormFields, createCorvusForm } from "corvuspay"
 
 export default async function Page({
     searchParams,
@@ -150,6 +150,39 @@ const result = await corvusCompleteSubscription(
 );
 ```
 
+### Charge Next Subscription Payment
+
+```javascript
+# same amount
+const result = await corvusNextSubPayment(
+    '123',                    // storeId
+    'order_123456',          // orderNumber (must be new each time)
+    '12345678912345678912',  // accountId (22 chars)
+    {
+      certPath: '/path/to/certificate.pem',
+      keyPath: '/path/to/private.key',
+      key: 'your_secret_key',              // optional
+      apiUrl: 'https://testcps.corvus.hr', // optional
+      cart: '2x SnowMaster 3000'           // optional
+    }
+);
+
+# different amount
+const result = await corvusNextSubPaymentWithAmount(
+    '123',                    // storeId
+    'order_123456',          // orderNumber (must be new each time)
+    '12345678912345678912',  // accountId (22 chars)
+    '100.00',                // newAmount
+    'EUR',                   // currency (ISO 4217)
+    {
+      certPath: '/path/to/certificate.pem',
+      keyPath: '/path/to/private.key',
+      cart: '2x SnowMaster 3000 (Updated Price)' // optional
+    }
+);
+
+```
+
 ### Refund Usage
 
 Refund is similar to GET transaction status regarding security:
@@ -168,7 +201,7 @@ const data = await corvusRefund(
 ```javascript
 "use server"
 
-import { CorvusFormFields, generateCorvusSignature } from "corvuspay-js";
+import { CorvusFormFields, generateCorvusSignature } from "corvuspay";
 
 export async function generateCorvusSignatureServer(fields: CorvusFormFields) {
     //uses CORVUS_SECRET_KEY in .env
